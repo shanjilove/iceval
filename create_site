@@ -1,0 +1,34 @@
+#!/bin/bash
+
+export PROJECT_RUNDIR=/vol/iceval
+export DB_NAME=iceval
+
+if [ -e ./bashrc ] ; then
+	source ./bashrc
+fi
+
+# create dirs
+if [ ! -d $PROJECT_RUNDIR ] ; then
+	echo "Please provide the running root dir [ $PROJECT_RUNDIR ]"
+	exit 1
+fi
+
+echo "Making site's folders ..."
+for folder in http/static log
+do
+    to_make=$PROJECT_RUNDIR/$folder
+    echo "    Making dir $to_make"
+    mkdir -p $to_make
+done
+
+# Migrate databases
+echo "Migrating databases ..."
+./manage.py migrate
+
+# Create admin
+echo "Creating admin user ..."
+./manage.py createsuperuser
+
+# Collect static files
+echo "Collecting static files ..."
+./manage.py collectstatic

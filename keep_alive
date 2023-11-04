@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# keep_alive
+
+if [ -e ~/.bashrc ]
+then
+	source ~/.bashrc
+fi
+if [ -e ~/.bash_profile ]
+then
+	source ~/.bash_profile
+fi
+
+if [ $# -lt 1 ]
+then
+	echo "Usage: keep_alive [-m MARK] [-r RUNDIR] [-l LOGFILE] [-t] TARGET"
+	echo "   or: keep_alive TARGET [MARK [RUNDIR [LOGFILE]]]"
+	exit 1
+fi
+
+while getopts "t:m:r:l:" arg
+do
+	case $arg in
+		t)
+			target=$OPTARG
+			;;
+		m)
+			mark=$OPTARG
+			;;
+		r)
+			rundir=$OPTARG
+			;;
+		l)
+			log=$OPTARG
+			;;
+		?)
+			echo "Unknown argument: $arg"
+	#		exit 1 
+			;;  
+	esac  
+done
+shift $(expr $OPTIND - 1 )
+for pos_arg in target mark rundir log
+do
+	if [ $# -le 0 ]; then
+		break
+	else
+		eval ${pos_arg}='$1'
+		shift
+	fi
+done
+
+if [ "$mark" == "" ] ; then
+	mark="$target"
+fi
+if [ "$rundir" == "" ] ; then
+	rundir="."
+fi
+if [ "$log" == "" ] ; then
+	log="/dev/null"
+fi
+
+#echo $target $mark $rundir $log
+
+grepres=`ps -eo cmd | grep "$mark" | grep -v "^grep " | grep -v "keep_alive\s*.*[\"\']*$target[\"\']*"`
+grepstate="$?"
+#echo $grepres
+#echo $grepstate
+
+if [ "$grepstate" -ne "0" ]
+then
+	cd "$rundir"
+	echo "Executing: $target"
+	$target >> "$log" 2>&1 &
+else
+	echo "Already running: $target"
+fi

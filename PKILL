@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo "Usage: PKILL grep_str"
+	exit 1
+fi
+
+type="-KILL"
+grep_str="$1"
+
+if [ $# -ge 2 ]
+then
+    type="$1"
+    grep_str="$2"
+fi
+
+pids=`ps -eo pid,cmd | grep -v 'PKILL' | grep "$grep_str" | awk '{print $1}'`
+for pid in $pids
+do
+	ps $pid
+	kill $type $pid
+done
+

@@ -1,0 +1,27 @@
+#!/bin/bash
+if [ "$USER" != "postgres" ] ; then
+	echo "提示：如果没有权限创建数据库或创建postgis扩展，请用postgres用户运行该脚本。"
+fi
+
+export PROJECT_RUNDIR=/vol/iceval
+export DB_NAME=iceval
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=iceval
+
+if [ -e ./bashrc ] ; then
+	source ./bashrc
+fi
+
+# create databases
+echo "Making database $DB_NAME"
+if [ $DB_HOST != "localhost" ] ; then
+  HOST_ARG="--host=$DB_HOST"
+else
+  HOST_ARG=""
+fi
+createdb $HOST_ARG --port=$DB_PORT --owner=$DB_USER $DB_NAME
+psql --port=$DB_PORT $DB_NAME << EOF
+  CREATE EXTENSION postgis;
+  \q
+EOF
