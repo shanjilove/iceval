@@ -7,19 +7,19 @@ services:
     environment:
       - GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
     env_file:
-      - .env.local
+      - .env.prod
     restart: always
     ports:
       - "9003:9003"
     expose:
-      - 8000
+      - 8001
     command: supervisord -c /etc/supervisor/conf.d/supervisord.conf
     depends_on:
       - postgres
     volumes:
-      - ./postgresql/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
-      - postgres_data:/var/lib/postgresql/iceval_web/data
+      - /home/prod/postgresql_data:/var/lib/postgresql/data
 
   nginx:
     image: nginx:latest
@@ -34,16 +34,17 @@ services:
       - iceval_web
 
   postgres:
-    image: postgres:15.3
+    image: postgres:latest
     user: postgres # 指定普通用户
     env_file:
-      - .env.local
+      - .env.prod
     restart: always
     ports:
       - "5432:5432"
     volumes:
       - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
-      - postgres_data:/var/lib/postgresql/iceval_web/data
+      - /home/prod/postgresql_data:/var/lib/postgresql/data
+
 
 
 volumes:
