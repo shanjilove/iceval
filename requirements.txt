@@ -19,15 +19,16 @@ drf-spectacular
 drf-spectacular-sidecar
 Pillow
 alibabacloud_dysmsapi20170525==2.0.23
-
+numpy-financial
 gevent
 gunicorn
+pypinyin
 
 krux
 knob
 dt_utils
 python-dotenv
-SQLAlchemy
+SQLAlchemy==1.4
 
 # install manually
 # ncore

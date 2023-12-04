@@ -2,10 +2,12 @@ import logging
 import os
 import time
 from logging import handlers
+
+from rest_framework import status
 from rest_framework.response import Response
 
 from iceval.settings import PROJECT_RUNDIR
-from utils.custom_exception import  SxopeException
+from utils.custom_exception import IcevalException
 
 
 class SafeTimedRotatingFileHandler(logging.handlers.TimedRotatingFileHandler):
@@ -117,16 +119,22 @@ def handler_exception():
             try:
                 logger.info(f"{func.__module__}.input:  Request---{args[0].get_view_name()}: {args[1].get_full_path()}")
                 result = func(*args, **kwargs)
-                logger.info(f"{func.__module__}.output:  Request---{args[0].get_view_name()}: {args[1].get_full_path()} Response---result: {result.status_code}")
+                logger.info(f"{func.__module__}.output:  Request---{args[0].get_view_name()}: {args[1].get_full_path()}"
+                            f" Response---result: {result.status_code}")
                 return result
-            except SxopeException as e:
+            except IcevalException as e:
                 logger.exception(e)
                 logger.error(f"{func.__module__}.input: {args[0].get_view_name()}---{args[1].get_full_path()}  {e}")
                 logger.debug(f"{func.__name__}.output: {args[0].get_view_name()}---{args[1].get_full_path()}  {e}")
-                return Response({'message': e.error_message}, status=e.error_code)
+                return Response({'msg': "服务端错误"}, status=e.error_code)
+            except ValueError as e:
+                logger.exception(e)
+                return Response({'msg': "请输入正确的数字！"}, status=status.HTTP_400_BAD_REQUEST)
+
         return inner
 
     return decorated
+
 
 if __name__ == '__main__':
     setup_log()
